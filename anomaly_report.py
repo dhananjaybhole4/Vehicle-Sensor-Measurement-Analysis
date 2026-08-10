@@ -23,8 +23,10 @@ class AnomalyReport():
                     analysis.append(f"{column} (z = {value:.2f})")
             z_values.loc[index, "analysis"] = ",".join(analysis)
 
-        # creating csv from dataframe
+        # add a coloum of analysis in anomalies
         anomalies["analysis"] = z_values["analysis"]
-        # filename = datetime.now().strftime("%Y-%m-%d-%H-%M-%S.csv")
-        print(anomalies.shape)
-        anomalies.to_csv(path_or_buf = Path.cwd()/"report"/(save_file_name + ".csv"))
+
+        # create csv from dataframe
+        report_directory = Path.cwd()/"report"
+        report_directory.mkdir(exist_ok = True)
+        anomalies.to_csv(path_or_buf = report_directory/(save_file_name + ".csv"))
