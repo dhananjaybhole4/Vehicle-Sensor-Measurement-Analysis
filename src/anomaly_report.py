@@ -1,14 +1,16 @@
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AnomalyReport():
     def __init__(self):
         pass
     
     def report(self, df: pd.DataFrame, anomalies: pd.DataFrame, save_file_name: str):
-        # removed the first time coloumn and last anomalies coloumn
-        feature_column = df.columns[1:-1]
+        # removed the first time coloumn
+        feature_column = df.drop("Time", axis = 1).columns
 
         # calculate mean and std across feature columns
         means = df[feature_column].mean()
@@ -24,9 +26,23 @@ class AnomalyReport():
             z_values.loc[index, "analysis"] = ",".join(analysis)
 
         # add a coloum of analysis in anomalies
-        anomalies["analysis"] = z_values["analysis"]
+        anomaly_report = anomalies.copy()
+        anomaly_report["analysis"] = z_values["analysis"]
 
         # create csv from dataframe
         report_directory = Path.cwd()/"report"
         report_directory.mkdir(exist_ok = True)
-        anomalies.to_csv(path_or_buf = report_directory/(save_file_name + ".csv"))
+
+        PATH = report_directory/(save_file_name + ".csv")
+        try:
+            anomaly_report.to_csv(path_or_buf = PATH)
+
+            # logging
+            if not PATH.exists():
+                logger.warning("Anomaly report not made")        
+            else:
+                logger.debug("shape of anomaly report %s", anomalies.shape)
+                logger.info("Anomaly report made successfully")
+        except OSError:
+            logger.error("failed in making a csv Anomaly report")
+            raise OSError("failed in making a csv Anomaly report")
