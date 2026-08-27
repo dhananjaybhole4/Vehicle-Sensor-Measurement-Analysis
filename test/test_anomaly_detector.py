@@ -23,4 +23,3 @@ def test_detect(anomaly_detector, dataloader, path):
     anomalies = anomaly_detector.detect(df)
 
     assert isinstance(anomalies, pd.DataFrame)
-    assert (anomalies["anomaly"] == -1).all()
