@@ -8,7 +8,7 @@ class AnomalyReport():
     def __init__(self):
         pass
     
-    def report(self, df: pd.DataFrame, anomalies: pd.DataFrame, save_file_name: str):
+    def report(self, df: pd.DataFrame, anomalies: pd.DataFrame, save_path: Path, save_file_name: str):
         # removed the first time coloumn
         feature_column = df.drop("Time", axis = 1).columns
 
@@ -30,10 +30,10 @@ class AnomalyReport():
         anomaly_report["analysis"] = z_values["analysis"]
 
         # create csv from dataframe
-        report_directory = Path.cwd()/"report"
-        report_directory.mkdir(exist_ok = True)
+        save_path.mkdir(exist_ok = True, 
+                        parents = True)
 
-        PATH = report_directory/(save_file_name + ".csv")
+        PATH = save_path/(save_file_name + ".csv")
         try:
             anomaly_report.to_csv(path_or_buf = PATH)
 
@@ -43,6 +43,7 @@ class AnomalyReport():
             else:
                 logger.debug("shape of anomaly report %s", anomalies.shape)
                 logger.info("Anomaly report made successfully")
+        
         except OSError:
             logger.error("failed in making a csv Anomaly report")
             raise OSError("failed in making a csv Anomaly report")
