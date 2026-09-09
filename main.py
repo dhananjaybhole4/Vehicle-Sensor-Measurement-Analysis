@@ -7,7 +7,9 @@ import argparse
 import logging
 
 # path variables
-path = Path.cwd()/"dataset/10.35097-1130/data/dataset/OBD-II-Dataset"
+dataset_path = Path(__file__).parent/"dataset/10.35097-1130/data/dataset/OBD-II-Dataset"
+
+report_path = Path(__file__).parent/"report"
 
 logging_dict = {"debug": logging.DEBUG,
                 "info": logging.INFO,
@@ -29,7 +31,7 @@ def main(path):
 
     # extract data from csv
     dataloader = DataLoader()
-    df = dataloader.csv_extractor(path/args.file_name)
+    df = dataloader.csv_extractor(path/(args.file_name+".csv"))
 
     # get anamomalies using the defined Anomaly Detector class
     anomaly_detector = AnomalyDetector()
@@ -37,7 +39,7 @@ def main(path):
 
     # get report
     anomaly_report = AnomalyReport()
-    anomaly_report.report(df, anomalies, args.save_file_name)
+    anomaly_report.report(df, anomalies, report_path, args.save_file_name)
 
 if __name__ == "__main__":
-    main(path)
+    main(dataset_path)
