@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class AnomalyDetector():
     """Identifies anomaly from the data with the help of algorithm Isolation Forest
     """
-    def __init__(self, contamination = 0.05 ,random_state = 42):
+    def __init__(self, contamination = "auto" ,random_state = 42):
         self.contamination = contamination
         self.randome_state = random_state
 
