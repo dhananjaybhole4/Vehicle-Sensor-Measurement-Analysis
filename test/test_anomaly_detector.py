@@ -16,7 +16,7 @@ def dataloader():
 
 @pytest.fixture()
 def path():
-    return Path.cwd()/"dataset/10.35097-1130/data/dataset/OBD-II-Dataset/2017-07-26_Seat_Leon_S_KA_Normal.csv"
+    return Path(__file__).parent/"fixtures"/"sample.csv"
 
 def test_detect(anomaly_detector, dataloader, path):
     df = dataloader.csv_extractor(path)
