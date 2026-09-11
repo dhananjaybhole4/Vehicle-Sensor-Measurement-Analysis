@@ -47,7 +47,9 @@ class AnomalyReport():
             else:
                 logger.debug("shape of anomaly report %s", anomalies.shape)
                 logger.info("Anomaly report made successfully")
+            return filtered_anomaly
         
         except OSError:
             logger.error("failed in making a csv Anomaly report")
             raise OSError("failed in making a csv Anomaly report")
+        
