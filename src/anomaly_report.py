@@ -23,11 +23,15 @@ class AnomalyReport():
             for column, value in row.items():
                 if value > 3:
                     analysis.append(f"{column} (z = {value:.2f})")
-            z_values.loc[index, "analysis"] = ",".join(analysis)
+            if not analysis == []:
+                z_values.loc[index, "analysis"] = ",".join(analysis)
 
         # add a coloum of analysis in anomalies
         anomaly_report = anomalies.copy()
         anomaly_report["analysis"] = z_values["analysis"]
+
+        # create a filtered anomaly dataframe which only contain the rows which are flagged with |z| of some parameters in them greater than 3
+        filtered_anomaly = anomaly_report[anomaly_report["analysis"].notna()]
 
         # create csv from dataframe
         save_path.mkdir(exist_ok = True, 
