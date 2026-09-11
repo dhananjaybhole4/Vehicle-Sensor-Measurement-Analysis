@@ -19,7 +19,7 @@ def test_full_pipeline_runs_end_to_end(tmp_path):
     # Act
     df = loader.csv_extractor(FIXTURE_PATH)
     anomalies = detector.detect(df)
-    reporter.report(df, anomalies, Path(tmp_path), "test_output")
+    _ = reporter.report(df, anomalies, Path(tmp_path), "test_output")
 
     # assert
     # check whether saved report exist
