@@ -2,6 +2,8 @@ import pandas as pd
 from pathlib import Path
 import logging
 
+from utils.stats import get_columns_stats
+
 logger = logging.getLogger(__name__)
 
 class AnomalyReport():
@@ -13,8 +15,7 @@ class AnomalyReport():
         feature_column = df.drop("Time", axis = 1).columns
 
         # calculate mean and std across feature columns
-        means = df[feature_column].mean()
-        stds = df[feature_column].std()
+        means, stds = get_columns_stats(df, feature_column)
 
         # calculate z values for each value in anomalies
         z_values = abs((anomalies[feature_column] - means)/stds)
