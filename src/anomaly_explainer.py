@@ -25,9 +25,10 @@ get_stats_declaration = {
 }
 
 class AnomalyExplainer():
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, max_tool_iteration: int):
         self.api_key = api_key
         self.client = genai.Client(api_key = self.api_key)
+        self.max_tool_iteration = max_tool_iteration
 
     def ai_explainer(self, df: pd.DataFrame, filtered_dataframe: pd.DataFrame, file_name: str) -> str:
 
@@ -52,8 +53,12 @@ class AnomalyExplainer():
                 contents = contents,
                 config = config
             )
+            i = 0
             while (response.function_calls):
 
+                i += 1
+                if i >= self.max_tool_iteration:
+                    return "incomplete: exceeded maximum tool call attempts"
                 
                 function_call = response.function_calls[0]
                 logger.info("Model requested tool call: %s with args %s", function_call.name, function_call.args)
