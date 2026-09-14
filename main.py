@@ -46,7 +46,6 @@ def main(path):
     # get anamomalies using the defined Anomaly Detector class
     anomaly_detector = AnomalyDetector()
     anomalies = anomaly_detector.detect(df)
-    print(f"total anomalies capture:{anomalies["Time"].shape}")
 
     # get report
     anomaly_report = AnomalyReport()
