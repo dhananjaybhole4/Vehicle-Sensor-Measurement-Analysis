@@ -29,13 +29,59 @@ class AnomalyExplainer():
         self.api_key = api_key
         self.client = genai.Client(api_key = self.api_key)
 
-    def ai_explainer(self, filtered_dataframe: pd.DataFrame, file_name: str) -> str:
-        
-        response = self.client.models.generate_content(
-            model = "gemini-3-flash-preview",
-            contents = "following is the anomalies found in the given data with extra column named as analysis describing parameters with |z| value higher than 3" \
-            "about the dataset please refer - CSV data containing ten vehicle signals logged via the OBD-II interface: Engine coolant temperature, intake manifold absolute pressure, engine RPM, vehicle speed sensor, intake air temperature, air flow rate from mass flow sensor, absolute throttle position, ambient air temperature as well as the accelerator pedal positions D and E. The data was recorded with the OBD-II dongle KIWI 3 from PLX Devices in combination with the smartphone application OBD Auto Doctor from Creosys on an iOS device. The file name is assembled according to the following scheme: <yyyy-mm-dd>_<brand>_<model>_<from>_<to>_<condition>_<extension>.csv - <from> and <to> represent start and end position of the log according to the German number plates, i.e. KA = Karlsruhe etc. - <condition> is a label indicating the principle road conditions (e.g. normal, frei/free, Stau/busy) - <extension> is optional and marks special situations occurring in the vehicle speed data" \
-            f"please find the given anomalies {str(filtered_dataframe)} and file name : {file_name}"\
-            " your task is to give the summary in short about the anomalies of the given data"
+    def ai_explainer(self, df: pd.DataFrame, filtered_dataframe: pd.DataFrame, file_name: str) -> str:
+
+        prompt = (
+            "following is the anomalies found in the given data with extra column named as analysis describing parameters with |z| value higher than 3"
+            "about the dataset please refer - CSV data containing ten vehicle signals logged via the OBD-II interface: ..."
+            f"please find the given anomalies {str(filtered_dataframe)} and file name : {file_name}"
+            " your task is to give the summary in short about the anomalies of the given data."
+            " You may call get_columns_stats_tool if you need the normal mean/std for a column to judge how unusual a value is."
         )
-        return response.text
+
+        tool = types.Tool(function_declarations = [get_stats_declaration])
+        config = types.GenerateContentConfig( tools = [tool])
+
+        contents = [
+            types.Content(role = "user", parts = [types.Part.from_text(text = prompt)])
+        ]
+
+        try:
+            response = self.client.models.generate_content(
+                model = "gemini-3-flash-preview",
+                contents = contents,
+                config = config
+            )
+            while (response.function_calls):
+
+                
+                function_call = response.function_calls[0]
+                logger.info("Model requested tool call: %s with args %s", function_call.name, function_call.args)
+
+                if function_call.name == "get_columns_stats_tool":
+                    result = get_columns_stats_tool(df, **function_call.args)
+                else:
+                    result = "unknown function called"
+
+                contents.append(response.candidates[0].content)
+                contents.append(
+                    types.Content(
+                        role = "user",
+                        parts = [types.Part.from_function_response(
+                            name = function_call.name,
+                            response = {"result": result}
+                        )]
+                    )
+                )
+
+                response = self.client.models.generate_content(
+                    model = "gemini-3-flash-preview",
+                    contents = contents,
+                    config = config,
+                )
+
+            return response.text
+        
+        except errors.ServerError:
+            logger.warning("Failed to get response from the Gemini")
+            return "Ai summary not available due to some error"
