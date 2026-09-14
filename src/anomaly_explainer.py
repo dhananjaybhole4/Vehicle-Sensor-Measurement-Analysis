@@ -3,7 +3,26 @@ from google import genai
 from google.genai import errors
 from google.genai import types
 
+import logging
 
+from utils.stats import get_columns_stats_tool
+
+logger = logging.getLogger()
+
+get_stats_declaration = {
+    "name":"get_columns_stats_tool",
+    "description":"Returns the mean and standard deviation of a given column in the vehicle sensor dataset, so you can judge whether a value is normal or anomalous",
+    "parameters":{
+        "type": "object",
+        "properties":{
+            "column": {
+                "type": "string",
+                "description": "the exact column name to get statistic for"
+            },
+        },
+        "required": ["column"]
+    },
+}
 
 class AnomalyExplainer():
     def __init__(self, api_key: str):
