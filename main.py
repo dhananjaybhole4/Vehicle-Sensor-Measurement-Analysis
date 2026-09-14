@@ -13,7 +13,7 @@ import os
 
 load_dotenv()
 
-# path variables
+# variables
 dataset_path = Path(__file__).parent/"dataset/10.35097-1130/data/dataset/OBD-II-Dataset"
 
 report_path = Path(__file__).parent/"report"
@@ -24,12 +24,15 @@ logging_dict = {"debug": logging.DEBUG,
                 "error": logging.ERROR,
                 "fatal": logging.FATAL}
 
+MAX_TOOL_ITERATION = 1
+
 def main(path):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_name")
-    parser.add_argument("save_file_name")
+    parser.add_argument("--file_name", default = "2017-07-11_Seat_Leon_KA_KA_Stau")
+    parser.add_argument("--save_file_name", default = "saved_report")
     parser.add_argument("--logging", default = "warning")
+    parser.add_argument("--ai_explain", action = "store_true")
 
     args = parser.parse_args()
 
