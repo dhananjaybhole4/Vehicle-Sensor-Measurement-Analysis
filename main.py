@@ -52,10 +52,11 @@ def main(path):
     filtered_dataframe = anomaly_report.report(df, anomalies, report_path, args.save_file_name)
 
     # get a summary about the anomalies from AI
-    api_key = os.environ["GEMINI_API_KEY"]
-    anomaly_explainer = AnomalyExplainer(api_key)
-    summary = anomaly_explainer.ai_explainer(filtered_dataframe, args.file_name)
-    print(summary)
+    if args.ai_explain:    
+        api_key = os.environ["GEMINI_API_KEY"]
+        anomaly_explainer = AnomalyExplainer(api_key, MAX_TOOL_ITERATION)
+        summary = anomaly_explainer.ai_explainer(df, filtered_dataframe, args.file_name)
+        print(summary)
 
 if __name__ == "__main__":
     main(dataset_path)
