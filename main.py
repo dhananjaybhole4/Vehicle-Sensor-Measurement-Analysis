@@ -1,12 +1,19 @@
 from src.anomaly_detector import AnomalyDetector
 from src.ingest import DataLoader
 from src.anomaly_report import AnomalyReport
+from src.anomaly_explainer import AnomalyExplainer
 
 from pathlib import Path
 import argparse
 import logging
 
-# path variables
+# API calling
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# variables
 dataset_path = Path(__file__).parent/"dataset/10.35097-1130/data/dataset/OBD-II-Dataset"
 
 report_path = Path(__file__).parent/"report"
@@ -17,12 +24,15 @@ logging_dict = {"debug": logging.DEBUG,
                 "error": logging.ERROR,
                 "fatal": logging.FATAL}
 
+MAX_TOOL_ITERATION = 1
+
 def main(path):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_name")
-    parser.add_argument("save_file_name")
+    parser.add_argument("--file_name", default = "2017-07-11_Seat_Leon_KA_KA_Stau")
+    parser.add_argument("--save_file_name", default = "saved_report")
     parser.add_argument("--logging", default = "warning")
+    parser.add_argument("--ai_explain", action = "store_true")
 
     args = parser.parse_args()
 
@@ -39,7 +49,14 @@ def main(path):
 
     # get report
     anomaly_report = AnomalyReport()
-    anomaly_report.report(df, anomalies, report_path, args.save_file_name)
+    filtered_dataframe = anomaly_report.report(df, anomalies, report_path, args.save_file_name)
+
+    # get a summary about the anomalies from AI
+    if args.ai_explain:    
+        api_key = os.environ["GEMINI_API_KEY"]
+        anomaly_explainer = AnomalyExplainer(api_key, MAX_TOOL_ITERATION)
+        summary = anomaly_explainer.ai_explainer(df, filtered_dataframe, args.file_name)
+        print(summary)
 
 if __name__ == "__main__":
     main(dataset_path)
