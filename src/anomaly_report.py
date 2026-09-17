@@ -10,7 +10,7 @@ class AnomalyReport():
     def __init__(self):
         pass
     
-    def report(self, df: pd.DataFrame, anomalies: pd.DataFrame, save_path: Path, save_file_name: str):
+    def report(self, df: pd.DataFrame, anomalies: pd.DataFrame, save_path: Path = None, save_file_name: str = None, make_report = True):
         # removed the first time coloumn
         feature_column = df.drop("Time", axis = 1).columns
 
@@ -34,20 +34,22 @@ class AnomalyReport():
         # create a filtered anomaly dataframe which only contain the rows which are flagged with |z| of some parameters in them greater than 3
         filtered_anomaly = anomaly_report[anomaly_report["analysis"].notna()]
 
-        # create csv from dataframe
-        save_path.mkdir(exist_ok = True, 
-                        parents = True)
 
-        PATH = save_path/(save_file_name + ".csv")
         try:
-            anomaly_report.to_csv(path_or_buf = PATH)
+            if make_report == True:
+                # create csv from dataframe
+                save_path.mkdir(exist_ok = True, 
+                parents = True)
 
-            # logging
-            if not PATH.exists():
-                logger.warning("Anomaly report not made")        
-            else:
-                logger.debug("shape of anomaly report %s", anomalies.shape)
-                logger.info("Anomaly report made successfully")
+                PATH = save_path/(save_file_name + ".csv")
+                anomaly_report.to_csv(path_or_buf = PATH)
+
+                # logging
+                if not PATH.exists():
+                    logger.warning("Anomaly report not made")        
+                else:
+                    logger.debug("shape of anomaly report %s", anomalies.shape)
+                    logger.info("Anomaly report made successfully")
             return filtered_anomaly
         
         except OSError:
